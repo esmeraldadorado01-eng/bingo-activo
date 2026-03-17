@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Activo - Generador Premium</title>
+    <style>
+        body { 
+            /* Fondo de la web con neón azul y dólares */
+            background-image: linear-gradient(rgba(18, 52, 86, 0.8), rgba(18, 52, 86, 0.8)), url('fondo_web.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #1a4567; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            font-family: 'Segoe UI', sans-serif; 
+            color: white; 
+            padding: 20px; 
+        }
+
+        .card { 
+            background: rgba(18, 52, 86, 0.95); 
+            padding: 30px; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.5); 
+            width: 350px; 
+            border: 2px solid #00d2ff;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { color: #00d2ff; font-size: 32px; margin-bottom: 10px; text-shadow: 0 0 10px #00d2ff; }
+        p { font-size: 14px; margin-bottom: 20px; opacity: 0.8; }
+        
+        .btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 15px; text-decoration: none; transition: 0.3s; text-align: center; box-sizing: border-box; }
+        .btn-blue { background: #0072ff; color: white; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4); }
+        .btn-green { background: #25d366; color: white; }
+        .btn-gray { background: #444; color: white; }
+        .btn:hover { transform: scale(1.02); opacity: 0.9; }
+
+        input { width: 90%; padding: 15px; margin-bottom: 15px; border-radius: 10px; border: 2px solid #00d2ff; background: #0a253d; color: white; text-align: center; font-size: 18px; outline: none; }
+        
+        /* Banner original en la portada */
+        .banner-img { width: 100%; border-radius: 10px; margin-bottom: 15px; border: 1px solid #00d2ff; }
+        .hidden { display: none; }
+        
+        #resultados { margin-top: 20px; display: flex; flex-direction: column; gap: 30px; align-items: center; width: 100%; }
+        
+        /* Estilo del cartón generado unificado */
+        canvas { 
+            max-width: 100%; 
+            border-radius: 15px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
+            border: 3px solid #00d2ff; /* Borde neón */
+            background-color: transparent; /* El fondo se dibuja en el canvas */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="pantalla1" class="card">
+        <h1>Bingo Activo</h1>
+        <p>¡Busca tus cartones favoritos! <p>
+          <p>  Recuerda enviar al whatsapp privado el capture del pago seguido del serial de tus cartones.</p>
+        <img src="banner.png" alt="Banner" class="banner-img" onerror="this.src='https://via.placeholder.com/500x140?text=Bingo+Activo'">
+        <button class="btn btn-blue" onclick="irABuscador()">🔍 GENERAR MIS CARTONES</button>
+        <a href="https://chat.whatsapp.com/GlFzC7alYtPFdcBqomlQNx?mode=gi_t" target="_blank" class="btn btn-green">UNIRSE AL GRUPO</a>
+    </div>
+
+    <div id="pantalla2" class="card hidden">
+        <h1>Buscador</h1>
+        <p>Escribe los números separados por espacio</p>
+        <input type="text" id="numerosInput" placeholder="Ej: 1 15 22" onkeypress="if(event.key==='Enter') procesarCartones()">
+        <button class="btn btn-blue" onclick="procesarCartones()">GENERAR AHORA</button>
+        <button class="btn btn-gray" onclick="irAPortada()">ATRÁS</button>
+    </div>
+
+    <div id="pantalla3" class="hidden" style="text-align: center; width: 100%;">
+        <div id="resultados"></div>
+        <button class="btn btn-gray" onclick="location.reload()" style="max-width:350px; margin: 30px auto;">GENERAR OTROS</button>
+    </div>
+
+    <script>
+        // Pre-carga de imágenes para el canvas
+        const imgBanner = new Image(); imgBanner.src = 'banner.png';
+        const imgBolita = new Image(); imgBolita.src = 'bolita.png';
+
+        function irABuscador() {
+            document.getElementById('pantalla1').classList.add('hidden');
+            document.getElementById('pantalla2').classList.remove('hidden');
+        }
+
+        function irAPortada() {
+            document.getElementById('pantalla2').classList.add('hidden');
+            document.getElementById('pantalla1').classList.remove('hidden');
+        }
+
+        function procesarCartones() {
+            const input = document.getElementById('numerosInput').value.trim();
+            if (!input) return alert("Por favor, ingresa al menos un número de serial.");
+            
+            const lista = input.split(/\s+/); 
+            document.getElementById('pantalla2').classList.add('hidden');
+            document.getElementById('pantalla3').classList.remove('hidden');
+            
+            const contenedor = document.getElementById('resultados');
+            contenedor.innerHTML = ""; 
+            
+            lista.forEach(num => {
+                const canvas = document.createElement('canvas');
+                // Medidas proporcionales para un cartón de bingo unificado
+                canvas.width = 500; 
+                canvas.height = 800;
+                contenedor.appendChild(canvas);
+                dibujarCarton(canvas, num);
+            });
+        }
+
+        function dibujarCarton(canvas, serial) {
+            const ctx = canvas.getContext('2d');
+            
+            // --- 1. FONDO UNIFICADO DEL CARTÓN ---
+            // Color de la rejilla / cuerpo del cartón
+            ctx.fillStyle = "#122f4e"; // Azul rey intenso
+            ctx.fillRect(0, 0, 500, 800);
+
+            // --- 2. DIBUJAR BANNER SUPERIOR (Ancho Completo y Proporcional) ---
+            try { 
+                // El banner se escala para cubrir todo el ancho de 500 píxeles
+                // y una altura proporcional (ej: 140 píxeles) para que no se vea cortado.
+                ctx.drawImage(imgBanner, 0, 0, 500, 140); 
+            } catch(e) { 
+                ctx.fillStyle = "#002d5a"; ctx.fillRect(0, 0, 500, 140); 
+                ctx.fillStyle="#00d2ff"; ctx.font="bold 40px Arial"; ctx.textAlign="center";
+                ctx.fillText("BINGO ACTIVO", 250, 80);
+            }
+
+            // Lógica de números aleatorios basada en el serial
+            let seed = parseInt(serial) * 999;
+            const rng = () => { var x = Math.sin(seed++) * 10000; return x - Math.floor(x); };
+
+            // --- 3. DIBUJAR CUADROS BLANCOS INDEPENDIENTES Y NÚMEROS ---
+            for (let i = 0; i < 5; i++) {
+                let inicio = (i * 15) + 1;
+                let nums = [];
+                while(nums.length < 5) {
+                    let r = Math.floor(rng() * 15) + inicio;
+                    if(!nums.includes(r)) nums.push(r);
+                }
+                nums.sort((a,b) => a-b).forEach((n, j) => {
+                    // Posición de cada cuadro (X,Y)
+                    // Las coordenadas se ajustan para que la rejilla comience justo debajo del banner
+                    let x = 38 + (i * 85); 
+                    let y = 170 + (j * 85);
+                    
+                    // DIBUJAR EL RECUADRO BLANCO (La celda independiente)
+                    ctx.fillStyle = "#ffffff"; 
+                    ctx.shadowColor = "rgba(0,0,0,0.4)";
+                    ctx.shadowBlur = 8;
+                    // Dejamos un espacio de 5 píxeles entre cuadros (rejilla)
+                    ctx.fillRect(x, y, 80, 80); 
+                    ctx.shadowBlur = 0; // Reset sombra
+
+                    // Borde fino para mayor nitidez
+                    ctx.strokeStyle = "rgba(0,0,0,0.1)"; 
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, 80, 80);
+
+                    if(i===2 && j===2) {
+                        // Espacio central (Logo o Bolita)
+                        try { 
+                            ctx.drawImage(imgBolita, x+5, y+5, 70, 70); 
+                        } catch(e) { 
+                            ctx.fillStyle="#00d2ff"; ctx.font="bold 12px Arial"; ctx.textAlign="center"; 
+                            ctx.fillText("FREE", x+40, y+45); 
+                        }
+                    } else {
+                        // El número en negro sobre el cuadro blanco
+                        ctx.fillStyle = "#1a1a1a"; 
+                        ctx.font = "bold 44px Arial"; 
+                        ctx.textAlign="center"; 
+                        ctx.fillText(n, x+40, y+58);
+                    }
+                });
+            }
+            
+            // --- 4. SERIAL Y DECORACIÓN INFERIOR ---
+            ctx.fillStyle = "#ffffff"; 
+            ctx.font = "bold 38px Arial"; 
+            ctx.textAlign = "center";
+            ctx.shadowColor = "rgba(0,0,0,0.6)";
+            ctx.shadowBlur = 10;
+            ctx.fillText("N° Serial: " + serial, 250, 720);
+            
+            ctx.fillStyle = "rgba(255,255,255,0.4)"; 
+            ctx.font = "italic 16px Arial"; 
+            ctx.fillText("Bingo Activo", 250, 760);
+        }
+    </script>
+</body>
+</html>
